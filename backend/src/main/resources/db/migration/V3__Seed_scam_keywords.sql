@@ -1,0 +1,15 @@
+INSERT INTO scam_keywords (keyword, category, weight) VALUES
+('registration fee', 'FEE_DEMAND', 40),
+('training fee', 'FEE_DEMAND', 40),
+('security deposit', 'FEE_DEMAND', 40),
+('joining fee', 'FEE_DEMAND', 40),
+('kit fee', 'FEE_DEMAND', 40),
+('laptop fee', 'FEE_DEMAND', 40),
+('pay to join', 'FEE_DEMAND', 40),
+('guaranteed job', 'PATTERN', 5),
+('guaranteed placement', 'PATTERN', 5),
+('earn from home', 'PATTERN', 5),
+('whatsapp only', 'PATTERN', 5),
+('limited seats', 'PATTERN', 5),
+('limited vacancy', 'PATTERN', 5),
+('urgent hiring', 'PATTERN', 5);
