@@ -1,0 +1,20 @@
+# IntelliJ / Eclipse
+.idea/
+*.iml
+.vscode/
+
+# Node
+node_modules/
+dist/
+build/
+.env
+.env.local
+
+# Maven
+target/
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
