@@ -41,4 +41,45 @@ public class AdminController {
         ReportResponse response = adminService.updateReportStatus(id, request.getStatus());
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/disputes")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<PaginatedResponse<com.fakecompanydetector.dto.DisputeResponse>> getDisputes(
+            @RequestParam(required = false, defaultValue = "PENDING") com.fakecompanydetector.entity.enums.DisputeStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        PaginatedResponse<com.fakecompanydetector.dto.DisputeResponse> response = adminService.getDisputes(status, PageRequest.of(page, size));
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/disputes/{id}/status")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> resolveDispute(
+            @PathVariable UUID id,
+            @RequestParam com.fakecompanydetector.entity.enums.DisputeStatus status) {
+        
+        adminService.resolveDispute(id, status);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/users/{id}/suspend")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> suspendUser(
+            @PathVariable UUID id,
+            @RequestParam boolean suspend) {
+        
+        adminService.suspendUser(id, suspend);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/users")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<PaginatedResponse<com.fakecompanydetector.dto.AdminUserDto>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        PaginatedResponse<com.fakecompanydetector.dto.AdminUserDto> response = adminService.getUsers(PageRequest.of(page, size));
+        return ResponseEntity.ok(response);
+    }
 }

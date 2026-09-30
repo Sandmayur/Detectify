@@ -1,37 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { adminApi } from '../services/adminApi';
+import { adminApi, type AdminUserDto, type DisputeResponse } from '../services/adminApi';
 import { type ReportResponse } from '../services/reportApi';
-import { Check, X, AlertTriangle, Link as LinkIcon, Mail, Phone, Image as ImageIcon } from 'lucide-react';
+import { Check, X, AlertTriangle, Link as LinkIcon, Mail, Phone, Image as ImageIcon, Users, ShieldAlert, FileText, Ban } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
     const [reports, setReports] = useState<ReportResponse[]>([]);
+    const [disputes, setDisputes] = useState<DisputeResponse[]>([]);
+    const [users, setUsers] = useState<AdminUserDto[]>([]);
+    
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
+    const [mainTab, setMainTab] = useState<'REPORTS' | 'DISPUTES' | 'USERS'>('REPORTS');
+    const [reportTab, setReportTab] = useState<'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
 
     useEffect(() => {
-        loadReports(activeTab);
-    }, [activeTab]);
+        loadData();
+    }, [mainTab, reportTab]);
 
-    const loadReports = async (status: 'PENDING' | 'APPROVED' | 'REJECTED') => {
+    const loadData = async () => {
         try {
             setIsLoading(true);
-            const data = await adminApi.getReports(status, 0, 50);
-            setReports(data.content);
+            if (mainTab === 'REPORTS') {
+                const data = await adminApi.getReports(reportTab, 0, 50);
+                setReports(data.content);
+            } else if (mainTab === 'DISPUTES') {
+                const data = await adminApi.getDisputes('PENDING', 0, 50);
+                setDisputes(data.content);
+            } else if (mainTab === 'USERS') {
+                const data = await adminApi.getUsers(0, 50);
+                setUsers(data.content);
+            }
         } catch (err) {
-            setError('Failed to load reports.');
+            setError('Failed to load data.');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleUpdateStatus = async (reportId: string, newStatus: 'APPROVED' | 'REJECTED') => {
+    const handleUpdateReportStatus = async (reportId: string, newStatus: 'APPROVED' | 'REJECTED') => {
         try {
             await adminApi.updateReportStatus(reportId, newStatus);
-            // Remove from current list if the tab is showing something else
             setReports(prev => prev.filter(r => r.id !== reportId));
         } catch (err) {
             alert('Failed to update status');
+        }
+    };
+
+    const handleResolveDispute = async (disputeId: string, newStatus: 'RESOLVED' | 'REJECTED') => {
+        try {
+            await adminApi.resolveDispute(disputeId, newStatus);
+            setDisputes(prev => prev.filter(d => d.id !== disputeId));
+        } catch (err) {
+            alert('Failed to resolve dispute');
+        }
+    };
+
+    const handleSuspendUser = async (userId: string, suspend: boolean) => {
+        try {
+            await adminApi.suspendUser(userId, suspend);
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, isSuspended: suspend } : u));
+        } catch (err) {
+            alert('Failed to suspend/unsuspend user');
         }
     };
 
@@ -39,24 +68,24 @@ export const AdminDashboard: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-8">Admin Dashboard</h1>
 
-            <div className="flex space-x-4 mb-6">
+            <div className="flex space-x-4 mb-6 border-b border-slate-200 pb-2">
                 <button
-                    onClick={() => setActiveTab('PENDING')}
-                    className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'PENDING' ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}
+                    onClick={() => setMainTab('REPORTS')}
+                    className={`flex items-center gap-2 px-4 py-2 font-bold ${mainTab === 'REPORTS' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                    Pending Reports
+                    <FileText className="w-5 h-5" /> Reports
                 </button>
                 <button
-                    onClick={() => setActiveTab('APPROVED')}
-                    className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'APPROVED' ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}
+                    onClick={() => setMainTab('DISPUTES')}
+                    className={`flex items-center gap-2 px-4 py-2 font-bold ${mainTab === 'DISPUTES' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                    Approved Reports
+                    <ShieldAlert className="w-5 h-5" /> Disputes
                 </button>
                 <button
-                    onClick={() => setActiveTab('REJECTED')}
-                    className={`px-4 py-2 rounded-lg font-medium ${activeTab === 'REJECTED' ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}
+                    onClick={() => setMainTab('USERS')}
+                    className={`flex items-center gap-2 px-4 py-2 font-bold ${mainTab === 'USERS' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                    Rejected Reports
+                    <Users className="w-5 h-5" /> Users
                 </button>
             </div>
 
@@ -67,78 +96,131 @@ export const AdminDashboard: React.FC = () => {
                 </div>
             )}
 
-            {isLoading ? (
-                <div className="flex justify-center py-12">
-                    <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></span>
-                </div>
-            ) : reports.length === 0 ? (
-                <div className="text-center py-16 bg-white border border-slate-200 rounded-2xl text-slate-500">
-                    No {activeTab.toLowerCase()} reports found.
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {reports.map(report => (
-                        <div key={report.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="text-xl font-bold text-slate-900">{report.companyName}</h3>
-                                    {report.companyDomain && (
-                                        <a href={`https://${report.companyDomain}`} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 hover:underline">
-                                            {report.companyDomain}
-                                        </a>
+            {mainTab === 'REPORTS' && (
+                <>
+                    <div className="flex space-x-4 mb-6">
+                        <button
+                            onClick={() => setReportTab('PENDING')}
+                            className={`px-4 py-2 rounded-lg font-medium ${reportTab === 'PENDING' ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-600 border border-slate-200'}`}
+                        >
+                            Pending
+                        </button>
+                        <button
+                            onClick={() => setReportTab('APPROVED')}
+                            className={`px-4 py-2 rounded-lg font-medium ${reportTab === 'APPROVED' ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-600 border border-slate-200'}`}
+                        >
+                            Approved
+                        </button>
+                        <button
+                            onClick={() => setReportTab('REJECTED')}
+                            className={`px-4 py-2 rounded-lg font-medium ${reportTab === 'REJECTED' ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-600 border border-slate-200'}`}
+                        >
+                            Rejected
+                        </button>
+                    </div>
+
+                    {isLoading ? (
+                        <div className="flex justify-center py-12"><span className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></span></div>
+                    ) : reports.length === 0 ? (
+                        <div className="text-center py-16 bg-white border border-slate-200 rounded-2xl text-slate-500">No reports found.</div>
+                    ) : (
+                        <div className="space-y-4">
+                            {reports.map(report => (
+                                <div key={report.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-slate-900">{report.companyName}</h3>
+                                            <p className="text-sm text-indigo-600">{report.companyDomain}</p>
+                                        </div>
+                                    </div>
+                                    <p className="mt-4 text-slate-700 bg-slate-50 p-4 rounded-xl">{report.description}</p>
+                                    
+                                    {reportTab === 'PENDING' && (
+                                        <div className="mt-6 flex gap-3">
+                                            <button onClick={() => handleUpdateReportStatus(report.id, 'REJECTED')} className="px-4 py-2 text-red-600 border border-red-200 rounded-xl hover:bg-red-50">Reject</button>
+                                            <button onClick={() => handleUpdateReportStatus(report.id, 'APPROVED')} className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700">Approve</button>
+                                        </div>
                                     )}
                                 </div>
-                                <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                                    {new Date(report.createdAt).toLocaleString()}
-                                </span>
-                            </div>
-
-                            <p className="mt-4 text-slate-700 bg-slate-50 p-4 rounded-xl whitespace-pre-wrap">
-                                {report.description}
-                            </p>
-
-                            <div className="mt-4 flex flex-wrap gap-3">
-                                {report.jobUrl && (
-                                    <div className="flex items-center gap-1.5 text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg font-medium border border-indigo-100">
-                                        <LinkIcon className="w-4 h-4" /> <a href={report.jobUrl} target="_blank" rel="noreferrer">Job Link</a>
-                                    </div>
-                                )}
-                                {report.recruiterEmail && (
-                                    <div className="flex items-center gap-1.5 text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg font-medium border border-indigo-100">
-                                        <Mail className="w-4 h-4" /> {report.recruiterEmail}
-                                    </div>
-                                )}
-                                {report.recruiterPhone && (
-                                    <div className="flex items-center gap-1.5 text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg font-medium border border-indigo-100">
-                                        <Phone className="w-4 h-4" /> {report.recruiterPhone}
-                                    </div>
-                                )}
-                                {report.evidenceUrl && (
-                                    <div className="flex items-center gap-1.5 text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg font-medium border border-indigo-100">
-                                        <ImageIcon className="w-4 h-4" /> <a href={report.evidenceUrl} target="_blank" rel="noreferrer">Evidence</a>
-                                    </div>
-                                )}
-                            </div>
-
-                            {activeTab === 'PENDING' && (
-                                <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-100">
-                                    <button 
-                                        onClick={() => handleUpdateStatus(report.id, 'REJECTED')}
-                                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-xl hover:bg-red-50 font-bold transition-colors"
-                                    >
-                                        <X className="w-4 h-4" /> Reject
-                                    </button>
-                                    <button 
-                                        onClick={() => handleUpdateStatus(report.id, 'APPROVED')}
-                                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold transition-colors shadow-sm"
-                                    >
-                                        <Check className="w-4 h-4" /> Approve
-                                    </button>
-                                </div>
-                            )}
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
+            )}
+
+            {mainTab === 'DISPUTES' && (
+                <>
+                    {isLoading ? (
+                        <div className="flex justify-center py-12"><span className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></span></div>
+                    ) : disputes.length === 0 ? (
+                        <div className="text-center py-16 bg-white border border-slate-200 rounded-2xl text-slate-500">No pending disputes found.</div>
+                    ) : (
+                        <div className="space-y-4">
+                            {disputes.map(dispute => (
+                                <div key={dispute.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
+                                    <div className="flex justify-between mb-4">
+                                        <h3 className="font-bold text-lg">{dispute.companyDomain}</h3>
+                                        <span className="text-sm text-slate-500">{new Date(dispute.createdAt).toLocaleString()}</span>
+                                    </div>
+                                    <div className="text-sm text-slate-600 mb-2"><strong>Contact:</strong> {dispute.contactEmail}</div>
+                                    <p className="bg-amber-50 text-amber-900 p-4 rounded-xl">{dispute.reason}</p>
+                                    <div className="mt-6 flex gap-3">
+                                        <button onClick={() => handleResolveDispute(dispute.id, 'REJECTED')} className="px-4 py-2 text-red-600 border border-red-200 rounded-xl hover:bg-red-50">Reject Dispute</button>
+                                        <button onClick={() => handleResolveDispute(dispute.id, 'RESOLVED')} className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700">Mark Resolved</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
+            )}
+
+            {mainTab === 'USERS' && (
+                <>
+                    {isLoading ? (
+                        <div className="flex justify-center py-12"><span className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></span></div>
+                    ) : users.length === 0 ? (
+                        <div className="text-center py-16 bg-white border border-slate-200 rounded-2xl text-slate-500">No users found.</div>
+                    ) : (
+                        <div className="overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-sm">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th className="px-6 py-4 font-semibold text-slate-700">Email</th>
+                                        <th className="px-6 py-4 font-semibold text-slate-700">Role</th>
+                                        <th className="px-6 py-4 font-semibold text-slate-700">Status</th>
+                                        <th className="px-6 py-4 font-semibold text-slate-700">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {users.map(user => (
+                                        <tr key={user.id}>
+                                            <td className="px-6 py-4 font-medium">{user.email}</td>
+                                            <td className="px-6 py-4"><span className="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-700">{user.role}</span></td>
+                                            <td className="px-6 py-4">
+                                                {user.isSuspended ? (
+                                                    <span className="text-red-600 font-bold flex items-center gap-1"><Ban className="w-4 h-4" /> Suspended</span>
+                                                ) : (
+                                                    <span className="text-emerald-600 font-bold flex items-center gap-1"><Check className="w-4 h-4" /> Active</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {user.role !== 'ADMIN' && (
+                                                    <button
+                                                        onClick={() => handleSuspendUser(user.id, !user.isSuspended)}
+                                                        className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${user.isSuspended ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
+                                                    >
+                                                        {user.isSuspended ? 'Unsuspend' : 'Suspend'}
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

@@ -11,6 +11,7 @@ import { Register } from './pages/Register';
 import { ReportsPage } from './pages/ReportsPage';
 import { SubmitReport } from './pages/SubmitReport';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { DisputePage } from './pages/DisputePage';
 import './index.css';
 
 const Home: React.FC = () => {
@@ -227,6 +228,7 @@ function App() {
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
                             <Route path="/reports" element={<ReportsPage />} />
+                            <Route path="/dispute" element={<DisputePage />} />
                             
                             {/* Protected Routes */}
                             <Route element={<ProtectedRoute />}>

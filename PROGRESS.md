@@ -7,9 +7,10 @@
 - Phase 3 - Authentication (backend and frontend)
 - Phase 4 - Community Reports & Voting
 - Phase 5 - Risk Analysis Engine (Core Orchestrator & Analyzers)
+- Phase 6 - Admin Workflows & Moderation
 
 ## Current Phase
-**Phase 6 - Admin Workflows & Moderation**
+**Phase 7 - Disputes & User Management**
 
 ## Decisions Made
 - Architecture and design phase completed and approved.
