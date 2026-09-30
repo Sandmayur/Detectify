@@ -46,16 +46,16 @@ const Home: React.FC = () => {
 
     const getRiskColor = (category: string) => {
         switch (category) {
-            case 'HIGH_RISK': return 'text-red-600 bg-red-50 border-red-200';
-            case 'MEDIUM_RISK': return 'text-amber-600 bg-amber-50 border-amber-200';
+            case 'HIGH': return 'text-red-600 bg-red-50 border-red-200';
+            case 'MEDIUM': return 'text-amber-600 bg-amber-50 border-amber-200';
             default: return 'text-emerald-600 bg-emerald-50 border-emerald-200';
         }
     };
 
     const getRiskIcon = (category: string) => {
         switch (category) {
-            case 'HIGH_RISK': return <AlertTriangle className="w-10 h-10 text-red-600" />;
-            case 'MEDIUM_RISK': return <Info className="w-10 h-10 text-amber-600" />;
+            case 'HIGH': return <AlertTriangle className="w-10 h-10 text-red-600" />;
+            case 'MEDIUM': return <Info className="w-10 h-10 text-amber-600" />;
             default: return <CheckCircle className="w-10 h-10 text-emerald-600" />;
         }
     };

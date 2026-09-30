@@ -24,7 +24,7 @@ export interface AnalysisResponse {
     companyName: string;
     rulesVersion: string;
     finalScore: number;
-    riskCategory: 'LOW_RISK' | 'MEDIUM_RISK' | 'HIGH_RISK';
+    riskCategory: 'LOW' | 'MEDIUM' | 'HIGH';
     createdAt: string;
     signals: SignalDto[];
 }

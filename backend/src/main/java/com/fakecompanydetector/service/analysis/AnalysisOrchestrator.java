@@ -122,12 +122,12 @@ public class AnalysisOrchestrator {
         // Any RED_FLAG guarantees HIGH_RISK, regardless of score.
         boolean hasRedFlag = signals.stream().anyMatch(s -> s.getSignalType() == SignalType.RED_FLAG);
         if (hasRedFlag) {
-            return RiskCategory.HIGH_RISK;
+            return RiskCategory.HIGH;
         }
 
-        if (score >= 40) return RiskCategory.HIGH_RISK;
-        if (score >= 20) return RiskCategory.MEDIUM_RISK;
-        return RiskCategory.LOW_RISK;
+        if (score >= 40) return RiskCategory.HIGH;
+        if (score >= 20) return RiskCategory.MEDIUM;
+        return RiskCategory.LOW;
     }
 
     private Company findOrCreateCompany(String domain, String originalName) {
