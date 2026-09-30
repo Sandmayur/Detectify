@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { reportApi, type SubmitReportRequest } from '../services/reportApi';
-import { AlertCircle, ArrowRight, Building, Link as LinkIcon, Mail, Phone, Image as ImageIcon } from 'lucide-react';
+import { AlertCircle, ArrowRight, Building, Link as LinkIcon, Mail, Phone, Image as ImageIcon, Upload } from 'lucide-react';
+import axios from 'axios';
 
 const reportSchema = z.object({
     companyName: z.string().min(1, 'Company name is required'),
@@ -29,10 +30,13 @@ type ReportForm = z.infer<typeof reportSchema>;
 export const SubmitReport: React.FC = () => {
     const navigate = useNavigate();
     const [serverError, setServerError] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const {
         register,
         handleSubmit,
+        setValue,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<ReportForm>({
         resolver: zodResolver(reportSchema),
@@ -46,6 +50,41 @@ export const SubmitReport: React.FC = () => {
             evidenceUrl: ''
         }
     });
+
+    const evidenceUrlValue = watch('evidenceUrl');
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File exceeds maximum size of 5MB');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        setIsUploading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post('http://localhost:8080/api/files/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.data.url) {
+                setValue('evidenceUrl', response.data.url, { shouldValidate: true });
+            }
+        } catch (error: any) {
+            console.error('Upload failed', error);
+            alert(error.response?.data?.error || 'Failed to upload file');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const onSubmit = async (data: ReportForm) => {
         try {
@@ -188,18 +227,37 @@ export const SubmitReport: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Evidence Image URL (Mocked Upload)</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <ImageIcon className="h-5 w-5 text-slate-400" />
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Evidence Image (Screenshot)</label>
+                                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl relative group">
+                                    <div className="space-y-1 text-center">
+                                        <Upload className="mx-auto h-12 w-12 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                                        <div className="flex text-sm text-slate-600 justify-center">
+                                            <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                <span>Upload a file</span>
+                                                <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/png, image/jpeg, image/webp" onChange={handleFileUpload} disabled={isUploading} />
+                                            </label>
+                                            <p className="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p className="text-xs text-slate-500">
+                                            PNG, JPG, WEBP up to 5MB
+                                        </p>
                                     </div>
-                                    <input
-                                        type="text"
-                                        className="pl-10 block w-full rounded-xl border border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 py-2.5 shadow-sm sm:text-sm"
-                                        placeholder="https://..."
-                                        {...register('evidenceUrl')}
-                                    />
+                                    {isUploading && (
+                                        <div className="absolute inset-0 bg-white/80 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                            <div className="flex items-center gap-2 text-indigo-600 font-medium">
+                                                <span className="w-5 h-5 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></span>
+                                                Uploading...
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
+                                {evidenceUrlValue && (
+                                    <div className="mt-2 text-sm text-green-600 flex items-center gap-1">
+                                        <ImageIcon className="w-4 h-4" />
+                                        Image uploaded successfully
+                                    </div>
+                                )}
+                                <input type="hidden" {...register('evidenceUrl')} />
                             </div>
                         </div>
                     </div>

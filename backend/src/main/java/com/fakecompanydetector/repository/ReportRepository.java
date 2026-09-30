@@ -15,4 +15,8 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
     Page<Report> findByStatus(ReportStatus status, Pageable pageable);
     Page<Report> findByStatusOrderByCreatedAtDesc(ReportStatus status, Pageable pageable);
     java.util.List<Report> findByCompanyDomainAndStatus(String domain, ReportStatus status);
+    
+    java.util.List<Report> findByUserIdAndCompanyIdAndCreatedAtAfter(UUID userId, UUID companyId, java.time.LocalDateTime date);
+    
+    long countByUserIdAndCreatedAtAfter(UUID userId, java.time.LocalDateTime date);
 }

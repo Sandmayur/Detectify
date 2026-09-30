@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -38,6 +39,14 @@ public class ReportController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{id}/flag")
+    public ResponseEntity<Void> flag(@PathVariable UUID id, @RequestBody Map<String, String> request) {
+        UUID userId = getCurrentUserId();
+        String reason = request.getOrDefault("reason", "Inappropriate content");
+        reportService.flagReport(userId, id, reason);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping
     public ResponseEntity<PaginatedResponse<ReportResponse>> getReports(
             @RequestParam(defaultValue = "0") int page,
@@ -45,6 +54,17 @@ public class ReportController {
         
         UUID currentUserId = getCurrentUserIdSafe();
         PaginatedResponse<ReportResponse> response = reportService.getApprovedReports(PageRequest.of(page, size), currentUserId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/company/{companyId}")
+    public ResponseEntity<PaginatedResponse<ReportResponse>> getReportsByCompany(
+            @PathVariable UUID companyId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        UUID currentUserId = getCurrentUserIdSafe();
+        PaginatedResponse<ReportResponse> response = reportService.getApprovedReportsByCompany(companyId, PageRequest.of(page, size), currentUserId);
         return ResponseEntity.ok(response);
     }
 

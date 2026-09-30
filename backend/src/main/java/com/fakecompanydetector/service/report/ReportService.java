@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final ReportVoteRepository reportVoteRepository;
+    private final com.fakecompanydetector.repository.ReportFlagRepository reportFlagRepository;
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
 
@@ -55,7 +57,19 @@ public class ReportService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        // Spam limits (max 5 per day)
+        long dailyCount = reportRepository.countByUserIdAndCreatedAtAfter(userId, LocalDateTime.now().minusDays(1));
+        if (dailyCount >= 5) {
+            throw new IllegalArgumentException("You have reached the maximum number of reports (5) allowed per day.");
+        }
+
         Company company = findOrCreateCompany(request.getCompanyDomain(), request.getCompanyName());
+
+        // Duplicate-report detection (same user, same company within 30 days)
+        List<Report> recentReports = reportRepository.findByUserIdAndCompanyIdAndCreatedAtAfter(userId, company.getId(), LocalDateTime.now().minusDays(30));
+        if (!recentReports.isEmpty()) {
+            throw new IllegalArgumentException("You have already submitted a report for this company recently.");
+        }
 
         Report report = Report.builder()
                 .company(company)
@@ -115,9 +129,61 @@ public class ReportService {
         return mapToResponse(report, userId);
     }
 
+    @Transactional
+    public void flagReport(UUID userId, UUID reportId, String reason) {
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("Report not found"));
+
+        if (report.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("You cannot flag your own report");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Check if already flagged by this user
+        boolean hasFlagged = reportFlagRepository.existsByReportIdAndUserId(reportId, userId);
+        if (hasFlagged) {
+            throw new IllegalArgumentException("You have already flagged this report");
+        }
+
+        com.fakecompanydetector.entity.ReportFlag flag = com.fakecompanydetector.entity.ReportFlag.builder()
+                .report(report)
+                .user(user)
+                .reason(reason)
+                .build();
+        
+        reportFlagRepository.save(flag);
+
+        // Flag threshold hides report
+        long totalFlags = reportFlagRepository.countByReportId(reportId);
+        if (totalFlags >= 5) {
+            report.setStatus(ReportStatus.REJECTED);
+            reportRepository.save(report);
+        }
+    }
+
     @Transactional(readOnly = true)
     public PaginatedResponse<ReportResponse> getApprovedReports(Pageable pageable, UUID currentUserId) {
         Page<Report> reportsPage = reportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.APPROVED, pageable);
+        
+        List<ReportResponse> content = reportsPage.getContent().stream()
+                .map(report -> mapToResponse(report, currentUserId))
+                .collect(Collectors.toList());
+
+        return PaginatedResponse.<ReportResponse>builder()
+                .content(content)
+                .pageNumber(reportsPage.getNumber())
+                .pageSize(reportsPage.getSize())
+                .totalElements(reportsPage.getTotalElements())
+                .totalPages(reportsPage.getTotalPages())
+                .last(reportsPage.isLast())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PaginatedResponse<ReportResponse> getApprovedReportsByCompany(UUID companyId, Pageable pageable, UUID currentUserId) {
+        Page<Report> reportsPage = reportRepository.findByCompanyIdAndStatus(companyId, ReportStatus.APPROVED, pageable);
         
         List<ReportResponse> content = reportsPage.getContent().stream()
                 .map(report -> mapToResponse(report, currentUserId))

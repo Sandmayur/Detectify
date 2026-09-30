@@ -50,5 +50,15 @@ export const reportApi = {
     vote: async (reportId: string, isUpvote: boolean) => {
         const response = await api.post<ReportResponse>(`/api/reports/${reportId}/vote`, { isUpvote });
         return response.data;
+    },
+
+    flag: async (reportId: string, reason: string) => {
+        const response = await api.post(`/api/reports/${reportId}/flag`, { reason });
+        return response.data;
+    },
+
+    getReportsByCompany: async (companyId: string, page = 0, size = 20) => {
+        const response = await api.get<PaginatedResponse<ReportResponse>>(`/api/reports/company/${companyId}?page=${page}&size=${size}`);
+        return response.data;
     }
 };

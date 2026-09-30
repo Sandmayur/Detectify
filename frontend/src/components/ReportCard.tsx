@@ -1,7 +1,7 @@
 import React from 'react';
 import { type ReportResponse, reportApi } from '../services/reportApi';
 import { useAuth } from '../contexts/AuthContext';
-import { ThumbsUp, ThumbsDown, Link as LinkIcon, Mail, Phone, Image as ImageIcon } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Link as LinkIcon, Mail, Phone, Image as ImageIcon, Flag, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ReportCardProps {
@@ -25,6 +25,26 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onVoteUpdated })
         } catch (error: any) {
             if (error.response?.data?.message) {
                 alert(error.response.data.message);
+            }
+    };
+
+    const handleFlag = async () => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        
+        const reason = window.prompt("Reason for flagging this report (e.g. spam, fake):");
+        if (!reason) return;
+        
+        try {
+            await reportApi.flag(report.id, reason);
+            alert("Report flagged successfully.");
+        } catch (error: any) {
+            if (error.response?.data?.message) {
+                alert(error.response.data.message);
+            } else {
+                alert("Failed to flag report.");
             }
         }
     };
@@ -55,16 +75,27 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onVoteUpdated })
                 <div className="flex-1">
                     <div className="flex justify-between items-start">
                         <div>
-                            <h3 className="text-lg font-bold text-slate-900">{report.companyName}</h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-slate-900">{report.companyName}</h3>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                                    <AlertTriangle className="w-3 h-3" />
+                                    Unverified Allegation
+                                </span>
+                            </div>
                             {report.companyDomain && (
                                 <a href={`https://${report.companyDomain}`} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 hover:underline">
                                     {report.companyDomain}
                                 </a>
                             )}
                         </div>
-                        <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
-                            {new Date(report.createdAt).toLocaleDateString()}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <button onClick={handleFlag} className="text-slate-400 hover:text-red-500 transition-colors" title="Flag as inappropriate">
+                                <Flag className="w-4 h-4" />
+                            </button>
+                            <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+                                {new Date(report.createdAt).toLocaleDateString()}
+                            </span>
+                        </div>
                     </div>
                     
                     <p className="mt-4 text-slate-700 whitespace-pre-wrap">
