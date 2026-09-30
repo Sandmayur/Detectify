@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Shield, Search, AlertTriangle, CheckCircle, Info, ChevronRight, Briefcase, Mail } from 'lucide-react';
-import { analysisApi, type AnalysisRequest, type AnalysisResponse, type SignalDto } from './services/analysisApi';
+import { analysisApi, type AnalysisRequest, type AnalysisResponse } from './services/analysisApi';
 import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -10,7 +10,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { ReportsPage } from './pages/ReportsPage';
 import { SubmitReport } from './pages/SubmitReport';
-import { api } from './services/api';
+import { AdminDashboard } from './pages/AdminDashboard';
 import './index.css';
 
 const Home: React.FC = () => {
@@ -212,13 +212,6 @@ const ProtectedDashboard: React.FC = () => (
     <div className="p-8 text-center">
         <h1 className="text-3xl font-bold text-slate-900">Protected Area</h1>
         <p className="mt-4 text-slate-600">You can only see this if you are logged in.</p>
-    </div>
-);
-
-const AdminDashboard: React.FC = () => (
-    <div className="p-8 text-center">
-        <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
-        <p className="mt-4 text-slate-600">You can only see this if you are an ADMIN.</p>
     </div>
 );
 

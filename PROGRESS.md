@@ -6,9 +6,10 @@
 - Phase 2 - Database, entities, repositories, seed data
 - Phase 3 - Authentication (backend and frontend)
 - Phase 4 - Community Reports & Voting
+- Phase 5 - Risk Analysis Engine (Core Orchestrator & Analyzers)
 
 ## Current Phase
-**Phase 5 - Risk Analysis Engine (Core Orchestrator & Analyzers)**
+**Phase 6 - Admin Workflows & Moderation**
 
 ## Decisions Made
 - Architecture and design phase completed and approved.
