@@ -23,6 +23,11 @@ export const Navbar: React.FC = () => {
                             </div>
                             <span className="font-bold text-xl text-slate-900 tracking-tight">Detectify</span>
                         </Link>
+                        <div className="hidden sm:flex ml-8 items-center space-x-4">
+                            <Link to="/reports" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">
+                                Reports
+                            </Link>
+                        </div>
                     </div>
                     
                     <div className="flex items-center gap-4">

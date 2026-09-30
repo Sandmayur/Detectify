@@ -4,9 +4,10 @@
 - Phase 0 - Architecture and design
 - Phase 1 - Project setup
 - Phase 2 - Database, entities, repositories, seed data
+- Phase 3 - Authentication (backend and frontend)
 
 ## Current Phase
-**Phase 3 - Authentication (backend and frontend)**
+**Phase 4 - Community Reports & Voting**
 
 ## Decisions Made
 - Architecture and design phase completed and approved.

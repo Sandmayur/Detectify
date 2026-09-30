@@ -26,4 +26,8 @@ public class ReportVote {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(name = "is_upvote", nullable = false)
+    @Builder.Default
+    private Boolean isUpvote = true;
 }

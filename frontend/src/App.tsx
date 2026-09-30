@@ -6,6 +6,8 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { ReportsPage } from './pages/ReportsPage';
+import { SubmitReport } from './pages/SubmitReport';
 import { api } from './services/api';
 import './index.css';
 
@@ -74,9 +76,11 @@ function App() {
                             <Route path="/" element={<Home />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
+                            <Route path="/reports" element={<ReportsPage />} />
                             
                             {/* Protected Routes */}
                             <Route element={<ProtectedRoute />}>
+                                <Route path="/reports/new" element={<SubmitReport />} />
                                 <Route path="/protected" element={<ProtectedDashboard />} />
                             </Route>
 
