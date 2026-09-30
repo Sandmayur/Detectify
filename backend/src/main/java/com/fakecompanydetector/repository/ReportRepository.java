@@ -13,4 +13,6 @@ import java.util.UUID;
 public interface ReportRepository extends JpaRepository<Report, UUID> {
     Page<Report> findByCompanyIdAndStatus(UUID companyId, ReportStatus status, Pageable pageable);
     Page<Report> findByStatus(ReportStatus status, Pageable pageable);
+    Page<Report> findByStatusOrderByCreatedAtDesc(ReportStatus status, Pageable pageable);
+    java.util.List<Report> findByCompanyDomainAndStatus(String domain, ReportStatus status);
 }

@@ -5,9 +5,10 @@
 - Phase 1 - Project setup
 - Phase 2 - Database, entities, repositories, seed data
 - Phase 3 - Authentication (backend and frontend)
+- Phase 4 - Community Reports & Voting
 
 ## Current Phase
-**Phase 4 - Community Reports & Voting**
+**Phase 5 - Risk Analysis Engine (Core Orchestrator & Analyzers)**
 
 ## Decisions Made
 - Architecture and design phase completed and approved.
