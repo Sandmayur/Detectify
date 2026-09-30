@@ -19,6 +19,30 @@ export interface DisputeResponse {
     createdAt: string;
 }
 
+export interface AdminStatisticsDto {
+    totalCompanies: number;
+    totalReports: number;
+    totalUsers: number;
+    pendingReports: number;
+    pendingDisputes: number;
+    flaggedReports: number;
+}
+
+export interface ScamKeywordDto {
+    id: string;
+    keyword: string;
+    category: string;
+    weight: number;
+    isActive: boolean;
+}
+
+export interface ScamKeywordRequest {
+    keyword: string;
+    category: string;
+    weight: number;
+    isActive: boolean;
+}
+
 export const adminApi = {
     getReports: async (status = 'PENDING', page = 0, size = 20) => {
         const response = await api.get<PaginatedResponse<ReportResponse>>(`/api/admin/reports?status=${status}&page=${page}&size=${size}`);
@@ -26,8 +50,16 @@ export const adminApi = {
     },
 
     updateReportStatus: async (reportId: string, status: 'APPROVED' | 'REJECTED' | 'PENDING') => {
-        const response = await api.patch<ReportResponse>(`/api/admin/reports/${reportId}/status`, { status });
-        return response.data;
+        if (status === 'APPROVED') {
+            const response = await api.patch<ReportResponse>(`/api/admin/reports/${reportId}/approve`);
+            return response.data;
+        } else if (status === 'REJECTED') {
+            const response = await api.patch<ReportResponse>(`/api/admin/reports/${reportId}/reject`);
+            return response.data;
+        } else {
+            const response = await api.patch<ReportResponse>(`/api/admin/reports/${reportId}/status`, { status });
+            return response.data;
+        }
     },
 
     getDisputes: async (status = 'PENDING', page = 0, size = 20) => {
@@ -46,5 +78,24 @@ export const adminApi = {
 
     suspendUser: async (userId: string, suspend: boolean) => {
         await api.post(`/api/admin/users/${userId}/suspend?suspend=${suspend}`);
+    },
+
+    getStatistics: async () => {
+        const response = await api.get<AdminStatisticsDto>('/api/admin/statistics');
+        return response.data;
+    },
+
+    getKeywords: async (page = 0, size = 50) => {
+        const response = await api.get<PaginatedResponse<ScamKeywordDto>>(`/api/admin/keywords?page=${page}&size=${size}`);
+        return response.data;
+    },
+
+    addKeyword: async (data: ScamKeywordRequest) => {
+        const response = await api.post<ScamKeywordDto>('/api/admin/keywords', data);
+        return response.data;
+    },
+
+    deleteKeyword: async (id: string) => {
+        await api.delete(`/api/admin/keywords/${id}`);
     }
 };

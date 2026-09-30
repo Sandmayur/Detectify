@@ -13,4 +13,5 @@ import com.fakecompanydetector.entity.enums.DisputeStatus;
 @Repository
 public interface DisputeRepository extends JpaRepository<Dispute, UUID> {
     Page<Dispute> findByStatus(DisputeStatus status, Pageable pageable);
+    long countByStatus(DisputeStatus status);
 }

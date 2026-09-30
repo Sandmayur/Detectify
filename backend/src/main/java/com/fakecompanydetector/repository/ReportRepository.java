@@ -19,4 +19,6 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
     java.util.List<Report> findByUserIdAndCompanyIdAndCreatedAtAfter(UUID userId, UUID companyId, java.time.LocalDateTime date);
     
     long countByUserIdAndCreatedAtAfter(UUID userId, java.time.LocalDateTime date);
+    
+    long countByStatus(ReportStatus status);
 }

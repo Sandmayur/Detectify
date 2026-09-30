@@ -26,6 +26,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onVoteUpdated })
             if (error.response?.data?.message) {
                 alert(error.response.data.message);
             }
+        }
     };
 
     const handleFlag = async () => {
