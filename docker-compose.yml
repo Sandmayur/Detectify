@@ -23,12 +23,14 @@ services:
       context: ./backend
     container_name: fcd_backend
     ports:
-      - "8081:8080"
+      - "8082:8080"
     depends_on:
       postgres:
         condition: service_healthy
     env_file:
       - .env.example
+    environment:
+      - DB_URL=jdbc:postgresql://postgres:5432/fcd_db
 
   frontend:
     build:

@@ -64,14 +64,22 @@ public class CareersPageAnalyzer implements RiskSignalAnalyzer {
             }
 
             // Check robots.txt
-            if (isBlockedByRobots(baseUrl)) {
+            if (ctx.getIsRobotsTxtBlocked() == null) {
+                ctx.setIsRobotsTxtBlocked(isBlockedByRobots(baseUrl));
+            }
+            if (Boolean.TRUE.equals(ctx.getIsRobotsTxtBlocked())) {
                 saveCache(domain, jobTitle, CacheStatus.UNKNOWN);
                 return buildUnknown("Careers search blocked by robots.txt.");
             }
 
             // Fetch homepage to find careers link
-            String homeHtml = httpClient.safeFetch(baseUrl);
-            Document homeDoc = Jsoup.parse(homeHtml, baseUrl);
+            if (ctx.getHomepageHtml() == null) {
+                String fetchedHtml = httpClient.safeFetch(baseUrl);
+                ctx.setHomepageHtml(fetchedHtml);
+                ctx.setHomepageDoc(Jsoup.parse(fetchedHtml, baseUrl));
+            }
+            String homeHtml = ctx.getHomepageHtml();
+            Document homeDoc = ctx.getHomepageDoc();
             
             String careersUrl = findCareersUrl(homeDoc, baseUrl);
             if (careersUrl == null) {

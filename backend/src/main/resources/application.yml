@@ -38,3 +38,20 @@ jwt:
   access-token-expiration: 900000 # 15 minutes in ms
   refresh-token-expiration: 604800000 # 7 days in ms
 
+fcd:
+  analyzers:
+    web-presence:
+      max-warning-points: 20
+      max-positive-points: -15
+      min-word-count: 50
+      points:
+        about-us-missing: 3
+        about-us-present: -3
+        contact-missing: 5
+        contact-present: -3
+        address-missing: 5
+        address-present: -3
+        https-missing: 10
+        social-missing: 5
+        social-present: -3
+        thin-content: 10

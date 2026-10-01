@@ -6,6 +6,6 @@ import { describe, it, expect } from 'vitest';
 describe('App Component', () => {
   it('renders correctly', () => {
     render(<App />);
-    expect(screen.getByText(/Fake Company Detector/i)).toBeDefined();
+    expect(screen.getAllByText(/Detectify/i).length).toBeGreaterThan(0);
   });
 });

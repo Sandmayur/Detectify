@@ -11,4 +11,8 @@ import java.util.UUID;
 public interface ReportVoteRepository extends JpaRepository<ReportVote, UUID> {
     Optional<ReportVote> findByReportIdAndUserId(UUID reportId, UUID userId);
     boolean existsByReportIdAndUserId(UUID reportId, UUID userId);
+    
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM ReportVote v WHERE v.user.id = :userId")
+    void deleteByUserId(UUID userId);
 }

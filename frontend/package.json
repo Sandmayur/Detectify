@@ -21,10 +21,11 @@
     "react-hook-form": "^7.89.0",
     "react-router-dom": "^7.18.4",
     "recharts": "^3.10.1",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^3.4.19",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^24.13.3",

@@ -21,4 +21,8 @@ public interface ReportRepository extends JpaRepository<Report, UUID> {
     long countByUserIdAndCreatedAtAfter(UUID userId, java.time.LocalDateTime date);
     
     long countByStatus(ReportStatus status);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("UPDATE Report r SET r.user = null WHERE r.user.id = :userId")
+    void anonymizeReportsByUserId(UUID userId);
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ShieldCheck, LogOut, User as UserIcon } from 'lucide-react';
+import { ShieldCheck, LogOut } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
     const { user, logout } = useAuth();
@@ -38,14 +38,14 @@ export const Navbar: React.FC = () => {
                                         Admin Dashboard
                                     </Link>
                                 )}
-                                <div className="flex items-center gap-2 pl-4 border-l border-slate-200">
-                                    <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
-                                        <UserIcon className="h-4 w-4 text-slate-500" />
+                                <Link to="/account" className="flex items-center gap-2 pl-4 border-l border-slate-200 hover:opacity-80 transition-opacity">
+                                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200 text-indigo-700 font-bold uppercase">
+                                        {user.email.charAt(0)}
                                     </div>
                                     <span className="text-sm font-medium text-slate-700 hidden sm:block">
                                         {user.email}
                                     </span>
-                                </div>
+                                </Link>
                                 <button
                                     onClick={handleLogout}
                                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-2"
